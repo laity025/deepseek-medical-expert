@@ -1,0 +1,33 @@
+# ============================================================
+# NVIDIA GPU（CUDA 12.1）环境依赖 —— 与项目实际虚拟环境（deploy）对齐
+# 实测环境: torch 2.5.1+cu121, transformers 5.16.1, peft 0.20.0
+# 安装: pip install -r requirements-gpu.txt
+# 注意: 本项目必须使用 CUDA 12.1 版 PyTorch，勿用 cu118 / CPU 版，否则训练极慢或不可用
+# ============================================================
+
+# ---- PyTorch：从 CUDA 12.1 官方源获取 GPU 版 torch ----
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.5.1+cu121
+
+# ---- 数值计算 ----
+numpy
+
+# ---- HuggingFace / 模型加载与微调 ----
+transformers
+datasets
+accelerate
+peft
+bitsandbytes
+hf-xet
+addict
+
+# ---- 模型下载（ModelScope 国内源，用于拉取 DeepSeek 基座）----
+modelscope
+
+# ---- 推理服务（FastAPI 接口 + 可视化界面）----
+fastapi
+uvicorn[standard]
+pydantic
+
+# ---- 绘图（loss 曲线 / 验证结果出图）----
+matplotlib

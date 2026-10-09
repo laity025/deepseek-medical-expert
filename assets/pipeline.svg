@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 330" width="900" height="330"
+     font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif">
+  <rect width="900" height="330" fill="#ffffff"/>
+
+  <!-- 标题 -->
+  <text x="24" y="42" font-size="19" font-weight="700" fill="#1f2d3d">全流程闭环：数据 → 训练 → 合并 → 验证 → 部署</text>
+  <text x="24" y="68" font-size="13" fill="#7a8b99">
+    基于 DeepSeek-R1-Distill-Qwen-1.5B + PEFT / LoRA，单张 8GB 显存显卡约 1 小时跑完
+  </text>
+  <line x1="24" y1="82" x2="876" y2="82" stroke="#e3edef" stroke-width="1"/>
+
+  <!-- 连线（在方块之前绘制） -->
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0e9f8f"/>
+    </marker>
+  </defs>
+  <g stroke="#0e9f8f" stroke-width="2" marker-end="url(#arw)">
+    <line x1="176" y1="142" x2="196" y2="142"/>
+    <line x1="352" y1="142" x2="372" y2="142"/>
+    <line x1="528" y1="142" x2="548" y2="142"/>
+    <line x1="704" y1="142" x2="724" y2="142"/>
+  </g>
+
+  <!-- ① 数据准备 -->
+  <g>
+    <rect x="24" y="96" width="152" height="94" rx="14" fill="#eef6f5" stroke="#cfe6e2"/>
+    <circle cx="42" cy="114" r="10" fill="#0e9f8f"/>
+    <text x="42" y="118" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+    <text x="60" y="118" font-size="14" font-weight="700" fill="#0e9f8f">数据准备</text>
+    <text x="40" y="146" font-size="11.5" fill="#1f2d3d">data_process.py</text>
+    <text x="40" y="164" font-size="11" fill="#7a8b99">3 字段格式转换</text>
+    <text x="40" y="180" font-size="11" fill="#7a8b99">1000 / 100 条划分</text>
+  </g>
+
+  <!-- ② LoRA 微调 -->
+  <g>
+    <rect x="200" y="96" width="152" height="94" rx="14" fill="#eef6f5" stroke="#cfe6e2"/>
+    <circle cx="218" cy="114" r="10" fill="#0e9f8f"/>
+    <text x="218" y="118" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+    <text x="236" y="118" font-size="14" font-weight="700" fill="#0e9f8f">LoRA 微调</text>
+    <text x="216" y="146" font-size="11.5" fill="#1f2d3d">deepseek_train.py</text>
+    <text x="216" y="164" font-size="11" fill="#7a8b99">r=16 · alpha=32</text>
+    <text x="216" y="180" font-size="11" fill="#7a8b99">2 epoch · lr=5e-5</text>
+  </g>
+
+  <!-- ③ 合并权重 -->
+  <g>
+    <rect x="376" y="96" width="152" height="94" rx="14" fill="#eef6f5" stroke="#cfe6e2"/>
+    <circle cx="394" cy="114" r="10" fill="#0e9f8f"/>
+    <text x="394" y="118" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+    <text x="412" y="118" font-size="14" font-weight="700" fill="#0e9f8f">合并权重</text>
+    <text x="392" y="146" font-size="11.5" fill="#1f2d3d">deepseek_merge.py</text>
+    <text x="392" y="164" font-size="11" fill="#7a8b99">基座 + LoRA</text>
+    <text x="392" y="180" font-size="11" fill="#7a8b99">→ 医疗专家模型</text>
+  </g>
+
+  <!-- ④ 效果验证 -->
+  <g>
+    <rect x="552" y="96" width="152" height="94" rx="14" fill="#eef6f5" stroke="#cfe6e2"/>
+    <circle cx="570" cy="114" r="10" fill="#0e9f8f"/>
+    <text x="570" y="118" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+    <text x="588" y="118" font-size="14" font-weight="700" fill="#0e9f8f">效果验证</text>
+    <text x="568" y="146" font-size="11.5" fill="#1f2d3d">deepseek_val.py</text>
+    <text x="568" y="164" font-size="11" fill="#7a8b99">微调前 / 后对比</text>
+    <text x="568" y="180" font-size="11" fill="#7a8b99">train_loss_plt.py</text>
+  </g>
+
+  <!-- ⑤ 接口部署 -->
+  <g>
+    <rect x="728" y="96" width="148" height="94" rx="14" fill="#0e9f8f" stroke="#0b8074"/>
+    <circle cx="746" cy="114" r="10" fill="#ffffff"/>
+    <text x="746" y="118" font-size="11" font-weight="700" fill="#0e9f8f" text-anchor="middle">5</text>
+    <text x="764" y="118" font-size="14" font-weight="700" fill="#ffffff">接口部署</text>
+    <text x="744" y="146" font-size="11.5" fill="#ffffff">deepseek_deploy*.py</text>
+    <text x="744" y="164" font-size="11" fill="#d5efeb">FastAPI + SSE 流式</text>
+    <text x="744" y="180" font-size="11" fill="#d5efeb">Web 可视化界面</text>
+  </g>
+
+  <!-- 底部：环境准备 -->
+  <rect x="24" y="216" width="852" height="52" rx="12" fill="#fafcfc" stroke="#e3edef"/>
+  <text x="44" y="240" font-size="12.5" font-weight="700" fill="#1f2d3d">环境准备（前置）</text>
+  <text x="44" y="258" font-size="11.5" fill="#7a8b99">
+    conda create -n deploy python=3.12 -y　·　pip install -r requirements-gpu.txt（torch 2.5.1+cu121，勿混装 CPU 版）
+  </text>
+
+  <!-- 底部：推理参数 -->
+  <text x="24" y="302" font-size="11.5" fill="#7a8b99">
+    统一推理参数（部署与验证保持一致）：temperature = 0.4　·　repetition_penalty = 1.1　·　max_new_tokens = 1024
+  </text>
+</svg>

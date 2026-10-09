@@ -1,0 +1,65 @@
+# ============================================================
+#  DeepSeek 医疗专家 —— Git 忽略清单
+#  本仓库只提交「代码 + 文档 + 界面截图 + 小体积训练元数据」，
+#  模型权重与原始数据集体积过大（合计 >7GB，GitHub 单文件硬上限 100MB），
+#  请按 README 的「快速上手」重新下载 / 训练生成。
+# ============================================================
+
+# ---------- Python 运行产物 ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# ---------- 编辑器 / IDE ----------
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# ---------- 操作系统 ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- 模型权重（约 7.1 GB）----------
+# 基座模型（model_download.py 下载，约 3.5GB）
+deepseek/DeepSeek-R1-Distill-Qwen-1.5B/
+# 合并后的医疗专家模型（deepseek_merge.py 生成，约 3.5GB）
+deepseek/DeepSeek-R1-Distill-Qwen-1.5B-Medical/
+# 兜底：任何位置的权重文件
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.bin
+*.h5
+
+# ---------- 原始数据集（约 170 MB）----------
+# 获取方式见 data/README.md
+data/medical_cot_zh.jsonl
+data/medical_alpaca.json
+data/medical_sharegpt.json
+
+# ---------- 训练中间产物 ----------
+# 保留 checkpoint 里的 adapter_config.json / trainer_state.json 等小文件（可复现损失曲线），
+# 只忽略体积大的优化器状态与分词器副本
+output/**/optimizer.pt
+output/**/rng_state.pth
+output/**/scheduler.pt
+output/**/tokenizer.json
+output/**/*.log
+
+# ---------- 打包 / 中间产物 ----------
+*.zip
+dist/
+build/
+.shot_profile/
+
+# ---------- Agent 工作目录 ----------
+.workbuddy/

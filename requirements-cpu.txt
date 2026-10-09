@@ -1,0 +1,31 @@
+# ============================================================
+# CPU / 无 NVIDIA 显卡环境依赖 —— 与 requirements-gpu.txt 同步，仅把 torch 换成 CPU 版
+# 用法: pip install -r requirements-cpu.txt
+# 注意: CPU 版仅用于无 GPU 的调试/推理，微调训练请务必切换到 CUDA 12.1 版（requirements-gpu.txt）
+# ============================================================
+
+# ---- 数值计算 ----
+numpy
+
+# ---- HuggingFace / 模型加载与微调 ----
+transformers
+datasets
+accelerate
+peft
+bitsandbytes
+hf-xet
+addict
+
+# ---- PyTorch：CPU 版（默认 wheel 已含 CPU 包，无需额外 index）----
+torch
+
+# ---- 模型下载（ModelScope 国内源）----
+modelscope
+
+# ---- 推理服务（FastAPI 接口 + 可视化界面）----
+fastapi
+uvicorn[standard]
+pydantic
+
+# ---- 绘图（loss 曲线 / 验证结果出图）----
+matplotlib

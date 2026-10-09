@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DeepSeek 医疗专家服务</title>
+<!-- 医疗主题单页界面：用于将 FastAPI 推理服务界面化，便于 PPT 演示与日常问答 -->
+<style>
+  :root {
+    --primary: #0e9f8f;        /* 主色：医疗青绿色 */
+    --primary-dark: #0b8074;
+    --bg: #f5f9f9;
+    --card: #ffffff;
+    --text: #1f2d3d;
+    --muted: #7a8b99;
+    --border: #e3edef;
+    --user-bubble: #0e9f8f;
+    --doctor-bubble: #eef6f5;
+    --shadow: 0 6px 24px rgba(14, 159, 143, 0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    background: linear-gradient(160deg, #eef6f5 0%, var(--bg) 40%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* 顶部导航栏 */
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(31, 45, 61, 0.06);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), #34c9b8);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 20px;
+    box-shadow: 0 4px 12px rgba(14, 159, 143, 0.35);
+  }
+  .brand h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+  .brand .tag { font-size: 12px; color: var(--muted); }
+
+  /* 健康信息卡片 */
+  .status-bar {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 999px; padding: 6px 14px;
+    font-size: 13px; color: var(--text);
+  }
+  .status-pill .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #f0ad4e;
+  }
+  .status-pill .dot.ok { background: #2ecc71; }
+  .status-pill .dot.fail { background: #e74c3c; }
+  .status-pill b { font-weight: 600; }
+
+  /* 主体：左侧健康面板 + 右侧聊天区 */
+  main {
+    max-width: 1160px; margin: 28px auto; padding: 0 20px;
+    display: grid; grid-template-columns: 300px 1fr; gap: 22px;
+  }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+
+  /* 左侧面板 */
+  .panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; box-shadow: var(--shadow);
+    padding: 20px; height: fit-content;
+  }
+  .panel h3 {
+    font-size: 15px; margin-bottom: 14px; color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .info-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0; border-bottom: 1px dashed var(--border);
+    font-size: 13px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .k { color: var(--muted); }
+  .info-row .v { font-weight: 600; word-break: break-all; text-align: right; }
+  .badge-cuda {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    background: #eef6f5; color: var(--primary-dark);
+    font-family: Consolas, monospace; font-size: 12px; font-weight: 700;
+  }
+  .usage-bar {
+    height: 8px; border-radius: 999px; background: var(--bg);
+    overflow: hidden; margin-top: 6px;
+  }
+  .usage-bar > span { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), #34c9b8); }
+
+  /* 聊天区 */
+  .chat-wrap {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; min-height: 520px;
+  }
+  .chat-head {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    font-size: 14px; color: var(--muted);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .chat-head .hint { font-size: 12px; }
+  .clear-btn {
+    border: 1px solid var(--border); background: var(--card);
+    color: var(--muted); border-radius: 8px; padding: 5px 12px;
+    cursor: pointer; font-size: 12px; transition: all .2s;
+  }
+  .clear-btn:hover { color: #e74c3c; border-color: #e74c3c; }
+
+  /* 消息区 */
+  .chat-body {
+    flex: 1; overflow-y: auto; padding: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+    background: #fbfdfd;
+  }
+  .msg { max-width: 85%; padding: 12px 15px; border-radius: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; font-size: 14px; }
+  .msg.user { align-self: flex-end; background: var(--user-bubble); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.doctor { align-self: flex-start; background: var(--doctor-bubble); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg.loading { align-self: flex-start; color: var(--muted); font-style: italic; display: flex; align-items: center; gap: 8px; }
+  .spinner {
+    width: 14px; height: 14px; border: 2px solid var(--border);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .msg .label { font-size: 12px; font-weight: 700; margin-bottom: 4px; opacity: .8; }
+  .caret { animation: blink 1s steps(1) infinite; color: var(--primary); margin-left: 1px; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* 输入区 */
+  .chat-input {
+    padding: 14px 14px 18px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: flex-end;
+  }
+  .chat-input textarea {
+    flex: 1; resize: none; border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; font-size: 14px; font-family: inherit;
+    line-height: 1.6; min-height: 46px; max-height: 140px; outline: none;
+    transition: border-color .2s;
+  }
+  .chat-input textarea:focus { border-color: var(--primary); }
+  .send-btn {
+    height: 46px; padding: 0 24px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), #24b3a4); color: #fff;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(14, 159, 143, 0.35);
+    transition: transform .1s, opacity .2s;
+  }
+  .send-btn:hover { transform: translateY(-1px); }
+  .send-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+  /* 推荐问题快捷按钮 */
+  .suggest {
+    display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 16px 0;
+  }
+  .suggest button {
+    border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+    border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer;
+    transition: all .2s;
+  }
+  .suggest button:hover { color: var(--primary); border-color: var(--primary); }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 18px; }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航栏 -->
+<header>
+  <div class="brand">
+    <div class="logo">🏥</div>
+    <div>
+      <h1>DeepSeek 医疗专家</h1>
+      <div class="tag">DeepSeek-R1-Distill-Qwen-1.5B · LoRA 微调 · FastAPI 部署</div>
+    </div>
+  </div>
+  <div class="status-bar">
+    <span class="status-pill"><span class="dot" id="dotStatus"></span><b id="statusText">连接中…</b></span>
+  </div>
+</header>
+
+<main>
+  <!-- 左侧：健康信息面板 -->
+  <aside class="panel">
+    <h3>🩺 服务状态</h3>
+    <div>
+      <div class="info-row"><span class="k">接口状态</span><span class="v" id="apiStatus">-</span></div>
+      <div class="info-row"><span class="k">推理设备</span><span class="v" id="device">-</span></div>
+      <div class="info-row"><span class="k">模型路径</span><span class="v" id="model">-</span></div>
+      <div class="info-row"><span class="k">CUDA</span><span class="v" id="cuda">-</span></div>
+      <div class="info-row"><span class="k">显存使用</span><span class="v" id="gpuMem">-</span></div>
+      <div style="margin-top:6px">
+        <div class="usage-bar"><span id="gpuBar"></span></div>
+      </div>
+    </div>
+    <h3 style="margin-top:22px">💊 快速提问</h3>
+    <div class="suggest"></div>
+  </aside>
+
+  <!-- 右侧：聊天区 -->
+  <section class="chat-wrap">
+    <div class="chat-head">
+      <span>💬 医疗咨询</span>
+      <button class="clear-btn" onclick="clearChat()">清空对话</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="msg doctor">您好，我是 DeepSeek 医疗专家模型。您可以向我咨询常见疾病的饮食与生活方式建议（如糖尿病、高血压、脂肪肝等），我会尽力给出专业参考意见。<br /><br />⚠️ 本模型仅供学习演示，不能替代专业医生诊断。</div>
+    </div>
+    <div class="suggest" id="quickQ"></div>
+    <div class="chat-input">
+      <textarea id="question" placeholder="请输入您的医疗问题…（Enter 发送，Shift+Enter 换行）" rows="1"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="send()">发送</button>
+    </div>
+  </section>
+</main>
+
+<footer>DeepSeek 医疗专家模型部署演示 · FastAPI 推理服务</footer>
+
+<script>
+  // ===== 健康信息获取：调用 /health =====
+  async function loadHealth() {
+    const dot = document.getElementById('dotStatus');
+    const statusText = document.getElementById('statusText');
+    try {
+      const res = await fetch('/health');
+      const data = await res.json();
+      document.getElementById('apiStatus').textContent = '正常';
+      document.getElementById('device').textContent = data.device || '-';
+      document.getElementById('model').textContent = data.model || '-';
+
+      // 根据设备显示 CUDA 徽标
+      const isCuda = (data.device || '').toLowerCase().includes('cuda');
+      document.getElementById('cuda').innerHTML =
+        isCuda ? '<span class="badge-cuda">使用 GPU</span>' : '<span class="badge-cuda">CPU</span>';
+
+      dot.classList.add('ok');
+      statusText.textContent = '服务在线';
+      statusText.style.color = '#2ecc71';
+
+      // 若有显存信息则展示（无则显示提示）
+      if (data.allocation && data.reserved) {
+        const used = data.allocation / 1073741824;   // 已分配 GiB
+        const total = data.reserved / 1073741824;    // 保留 GiB
+        document.getElementById('gpuMem').textContent = used.toFixed(1) + ' / ' + total.toFixed(1) + ' GiB';
+        const pct = Math.min(100, (used / total) * 100);
+        document.getElementById('gpuBar').style.width = pct.toFixed(0) + '%';
+      }
+    } catch (e) {
+      dot.classList.add('fail');
+      statusText.textContent = '无法连接服务';
+      statusText.style.color = '#e74c3c';
+      document.getElementById('apiStatus').textContent = '异常';
+    }
+  }
+
+  // ===== 预置推荐问题（常用慢性病咨询，模型覆盖较好的场景）=====
+  const QUICK = [
+    '糖尿病患者日常饮食应该注意什么？',
+    '高血压患者平时如何监测血压和调整作息？',
+    '脂肪肝患者如何通过运动和饮食改善？',
+    '长期熬夜对健康有什么影响？'
+  ];
+
+  // 渲染推荐问题按钮（左侧 + 聊天区上方）
+  function renderQuick() {
+    const container = document.getElementById('quickQ');
+    QUICK.forEach(q => {
+      const b = document.createElement('button');
+      b.textContent = q;
+      b.onclick = () => { document.getElementById('question').value = q; send(); };
+      container.appendChild(b);
+    });
+  }
+
+  // ===== 追加消息到聊天区 =====
+  function appendMsg(text, who) {
+    const body = document.getElementById('chatBody');
+    const div = document.createElement('div');
+    div.className = 'msg ' + who;
+    if (who === 'doctor') {
+      // 医生回答：先给标签，便于区分模型输出
+      div.innerHTML = '<div class="label">🩺 医疗专家</div>' + escapeHtml(text);
+    } else {
+      div.innerHTML = escapeHtml(text);
+    }
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+    return div;
+  }
+
+  // HTML 转义，防止 XSS（用户输入/模型输出直接插入页面）
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  // ===== 发送问题：走 SSE 流式接口 /chat/stream，逐块渲染回答 =====
+  async function send() {
+    const input = document.getElementById('question');
+    const sendBtn = document.getElementById('sendBtn');
+    const q = input.value.trim();
+    if (!q) return;
+
+    appendMsg(q, 'user');          // 回显用户问题
+    input.value = '';              // 清空输入框
+    sendBtn.disabled = true;       // 防止重复提交
+
+    const body = document.getElementById('chatBody');
+    // 医生回答容器：答案文本 + 闪烁光标
+    const div = document.createElement('div');
+    div.className = 'msg doctor';
+    div.innerHTML = '<div class="label">🩺 医疗专家</div><span class="ans"></span><span class="caret">▍</span>';
+    body.appendChild(div);
+    const ansSpan = div.querySelector('.ans');
+    const caret = div.querySelector('.caret');
+
+    try {
+      const res = await fetch('/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+
+      const reader = res.body.getReader();   // 读取流式响应
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';                        // SSE 缓冲
+      let text = '';                          // 已累积的回答
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // 按 SSE 两条消息间的空行分隔解析
+        let sep;
+        while ((sep = buffer.indexOf('\n\n')) >= 0) {
+          const raw = buffer.slice(0, sep);
+          buffer = buffer.slice(sep + 2);
+          if (raw.startsWith('data:')) {
+            const data = raw.slice(5).trim();
+            if (!data) continue;
+            try {
+              const obj = JSON.parse(data);
+              if (obj.delta) text += obj.delta;  // 追加分片
+            } catch (_) { /* 忽略无法解析的分片 */ }
+          }
+        }
+        ansSpan.textContent = text;   // 用 textContent 安全转义
+        body.scrollTop = body.scrollHeight;
+      }
+      ansSpan.textContent = text;
+    } catch (e) {
+      ansSpan.innerHTML = '<span style="color:#e74c3c">请求失败：请确认界面服务（deepseek_deploy_ui.py）正在运行。</span>';
+    } finally {
+      caret.remove();               // 移除闪烁光标
+      sendBtn.disabled = false;
+      document.getElementById('question').focus();
+    }
+  }
+
+  // 清空对话（保留欢迎语）
+  function clearChat() {
+    const body = document.getElementById('chatBody');
+    body.innerHTML = '';
+    appendMsg('您好，我是 DeepSeek 医疗专家模型。您可以向我咨询常见疾病的饮食与生活方式建议（如糖尿病、高血压、脂肪肝等）。', 'doctor');
+  }
+
+  // 输入框：Enter 发送，Shift+Enter 换行；自动增高
+  document.getElementById('question').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+  document.getElementById('question').addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 140) + 'px';
+  });
+
+  // 初始化
+  renderQuick();
+  loadHealth();
+</script>
+</body>
+</html>

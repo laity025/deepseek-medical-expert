@@ -1,0 +1,19 @@
+{
+  "add_prefix_space": null,
+  "backend": "tokenizers",
+  "bos_token": "<｜begin▁of▁sentence｜>",
+  "clean_up_tokenization_spaces": false,
+  "do_sample": true,
+  "eos_token": "<｜end▁of▁sentence｜>",
+  "is_local": true,
+  "legacy": true,
+  "local_files_only": false,
+  "model_max_length": 16384,
+  "pad_token": "<｜end▁of▁sentence｜>",
+  "sp_model_kwargs": {},
+  "temperature": 0.6,
+  "tokenizer_class": "Qwen2Tokenizer",
+  "top_k": 20,
+  "top_p": 0.95,
+  "unk_token": null
+}

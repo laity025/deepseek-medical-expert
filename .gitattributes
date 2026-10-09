@@ -1,0 +1,13 @@
+# 统一换行符处理，避免 Windows / Linux 协作时的 CRLF 噪声
+* text=auto
+
+# 二进制文件不做行尾转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pptx binary
+*.zip binary
+*.safetensors binary
+*.pt binary
+*.pth binary
